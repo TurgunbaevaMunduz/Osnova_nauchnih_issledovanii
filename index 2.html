@@ -1,0 +1,440 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Рейс НИ-101</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Макет: занятие по «Основам научных исследований» как авиарейс — табло вылетов в роли оглавления, затем брифинг (карточки тем), командная игра для проектора и дебрифинг с таймером. Ночной перрон, янтарь табло — единственный акцент */
+:root{
+  color-scheme: dark;
+  --night:#0A1424; --panel:#101D31; --panel2:#16253D; --line:#243652;
+  --text:#E9EEF5; --muted:#93A6C1;
+  --amber:#F5B841; --amber-ink:#1A1306;
+  --ok:#3FD49B; --bad:#FF6F61; --sky:#7CB8FF;
+  --display:'Unbounded', 'Arial Black', Arial, sans-serif;
+  --body:'Golos Text', 'Segoe UI', Arial, sans-serif;
+  --mono:'JetBrains Mono', Consolas, 'Courier New', monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--night);color:var(--text);font:400 17px/1.6 var(--body);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0}
+.wrap{max-width:1140px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h2{font-size:clamp(26px,4vw,40px);line-height:1.15;font-weight:700}
+h3{font-size:18px;font-weight:700;line-height:1.3}
+p{margin:0}
+a{color:var(--amber)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:6px}
+.eyebrow{font:700 12px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.lead{color:var(--muted);max-width:64ch;font-size:18px}
+section{padding-block:72px;border-top:1px solid var(--line)}
+.sec-head{display:grid;gap:14px;margin-bottom:34px}
+.flightno{font:700 13px/1 var(--mono);color:var(--muted);letter-spacing:.1em}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 18px;font-weight:600}
+.btn:hover{border-color:var(--amber)}
+.btn.primary{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+
+/* ---------- Титул и табло ---------- */
+.hero{padding-block:56px 64px;display:grid;gap:26px}
+.hero h1{font-size:clamp(40px,8vw,84px);line-height:1;font-weight:800;letter-spacing:-.01em}
+.hero h1 span{color:var(--amber)}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px 18px;font:500 13px/1.4 var(--mono);color:var(--muted)}
+.board{background:#060D18;border:1px solid var(--line);border-radius:14px;padding:18px;overflow-x:auto;box-shadow:0 30px 80px -40px rgba(0,0,0,.9)}
+.board-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;font:700 13px/1 var(--mono);letter-spacing:.12em;color:var(--amber)}
+.clock{font-variant-numeric:tabular-nums}
+.row{display:grid;grid-template-columns:70px 86px minmax(260px,1fr) 52px 150px;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:6px 4px;border-radius:8px;min-width:680px}
+.row.head{font:700 11px/1 var(--mono);color:var(--muted);letter-spacing:.12em;padding-bottom:10px}
+button.row:hover{background:rgba(245,184,65,.07)}
+.flaps{display:flex;gap:2px}
+.flap{display:inline-grid;place-items:center;width:1.25em;height:1.65em;background:#111a28;border-radius:3px;font:700 15px/1 var(--mono);color:#F7E7C2;position:relative}
+.flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#050a12}
+.flap.go{animation:flip .38s ease-in-out both}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg);filter:brightness(.6)}100%{transform:rotateX(0)}}
+.status{font:700 13px/1 var(--mono);letter-spacing:.08em;padding:7px 9px;border-radius:5px;text-align:center}
+.st-board{background:var(--amber);color:var(--amber-ink)}
+.st-ok{background:rgba(63,212,155,.16);color:var(--ok)}
+.st-info{background:rgba(124,184,255,.14);color:var(--sky)}
+.board-note{margin-top:12px;font:500 12px/1.4 var(--mono);color:var(--muted)}
+
+/* ---------- План занятия ---------- */
+.plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.phase{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:10px;align-content:start}
+.phase-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mins{font:700 13px/1 var(--mono);color:var(--amber)}
+.phase p{color:var(--muted);font-size:15.5px}
+
+/* ---------- Карточки тем ---------- */
+.cards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.card{perspective:1400px;background:none;border:0;padding:0;text-align:left;min-width:0;grid-column:span 2}
+.card:nth-child(n+4){grid-column:span 3}
+@media (max-width:860px){.cards{grid-template-columns:1fr}.card,.card:nth-child(n+4){grid-column:auto}}
+.card-inner{display:grid;transition:transform .55s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.card.flipped .card-inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--line);background:var(--panel)}
+.face.back{transform:rotateY(180deg);background:#13213A;border-color:#33507A}
+.num{font:800 44px/1 var(--display);color:var(--amber)}
+.face h3{font-size:19px}
+.warm{font-size:15.5px;color:var(--muted)}
+.warm b{color:var(--text);font-weight:600}
+.hint{margin-top:auto;font:700 12px/1 var(--mono);letter-spacing:.1em;color:var(--muted)}
+.face ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:15px}
+.hook{background:var(--amber);color:var(--amber-ink);border-radius:10px;padding:10px 12px;font-weight:600;font-size:15px}
+.hook small{display:block;font:700 10px/1.4 var(--mono);letter-spacing:.12em}
+.triad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.triad span{background:var(--panel2);border-radius:8px;padding:8px;text-align:center;font-size:13px;color:var(--muted)}
+.triad b{display:block;font:800 22px/1.2 var(--display);color:var(--sky)}
+
+/* ---------- Игра ---------- */
+.game{background:#060D18;border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,34px);display:grid;gap:22px}
+.setup{display:grid;gap:18px}
+.setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.fieldset{display:grid;gap:8px}
+.fieldset label{font:700 12px/1.3 var(--mono);letter-spacing:.1em;color:var(--muted)}
+.fieldset input[type=text]{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;width:100%}
+.topics{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:15px}
+.chip input{accent-color:var(--amber);width:16px;height:16px}
+.modes{display:flex;gap:8px;flex-wrap:wrap}
+.mode{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:600}
+.mode.on{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.team{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;min-width:0}
+.team.turn{border-color:var(--amber);box-shadow:0 0 0 4px rgba(245,184,65,.12)}
+.team .tname{font:700 15px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.team .tscore{font:800 40px/1 var(--display);color:var(--amber);font-variant-numeric:tabular-nums}
+.qcount{display:grid;place-items:center;font:700 13px/1.3 var(--mono);color:var(--muted);text-align:center;padding:0 6px}
+.progress{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--amber);transition:width .35s}
+.qmeta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;font:700 13px/1.3 var(--mono);letter-spacing:.08em}
+.qmeta .topic{color:var(--sky)}
+.qmeta .who{color:var(--amber)}
+.question{font:600 clamp(22px,3vw,32px)/1.35 var(--body);text-wrap:balance}
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opt{display:flex;gap:14px;align-items:center;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:16px 18px;font-size:clamp(16px,1.8vw,20px);font-weight:600;min-width:0}
+.opt:hover:not([disabled]){border-color:var(--amber)}
+.opt .k{flex:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font:800 16px var(--display);background:var(--panel2);color:var(--amber)}
+.opt.right{border-color:var(--ok);background:rgba(63,212,155,.12)}
+.opt.right .k{background:var(--ok);color:#06281B}
+.opt.wrong{border-color:var(--bad);background:rgba(255,111,97,.12)}
+.opt.wrong .k{background:var(--bad);color:#2A0804}
+.opt[disabled]{cursor:default}
+.explain{border-radius:14px;padding:16px 18px;display:grid;gap:12px;background:var(--panel);border:1px solid var(--line)}
+.explain strong{font-family:var(--display);font-size:16px}
+.explain.good strong{color:var(--ok)}
+.explain.badv strong{color:var(--bad)}
+.explain p{font-size:17px}
+.actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.keys{font:500 12px/1.4 var(--mono);color:var(--muted)}
+.final{display:grid;gap:16px;justify-items:center;text-align:center;padding:12px 0}
+.final .big{font:800 clamp(30px,6vw,60px)/1.1 var(--display)}
+.final .big span{color:var(--amber)}
+.clear{font:700 14px/1 var(--mono);letter-spacing:.12em;background:var(--amber);color:var(--amber-ink);padding:10px 14px;border-radius:6px}
+
+/* ---------- Дебрифинг ---------- */
+.debrief{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:24px;align-items:start}
+.dq{display:grid;gap:12px;counter-reset:q}
+.dq p{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font:600 clamp(18px,2vw,22px)/1.4 var(--body);display:flex;gap:16px;align-items:baseline}
+.dq p::before{counter-increment:q;content:counter(q);font:800 20px var(--display);color:var(--amber)}
+.timer{background:#060D18;border:1px solid var(--line);border-radius:16px;padding:24px;display:grid;gap:16px;justify-items:center;text-align:center}
+.time{font:800 clamp(56px,8vw,84px)/1 var(--display);font-variant-numeric:tabular-nums;color:var(--amber)}
+.time.done{color:var(--ok)}
+.tbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+footer{border-top:1px solid var(--line);padding-block:40px 56px;display:grid;gap:18px;color:var(--muted);font-size:14.5px}
+footer h3{font-size:14px;color:var(--text)}
+footer ol{margin:0;padding-left:20px;display:grid;gap:6px}
+footer a{word-break:break-word}
+
+@media (max-width:860px){
+  .plan,.debrief,.setup-grid{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  section{padding-block:52px}
+  .options{grid-template-columns:1fr}
+  .scoreboard{grid-template-columns:1fr 1fr}
+  .qcount{grid-column:1/-1;order:-1}
+  .team .tscore{font-size:30px}
+}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">Основы научных исследований · повторение</p>
+  <h1>Рейс <span>НИ-101</span></h1>
+  <p class="lead">Занятие-повторение в формате авиарейса: от выбора темы исследования до защиты научной статьи. Брифинг по пяти темам, командная игра экипажей и дебрифинг. Откройте страницу на проекторе — всё рассчитано на 20 минут.</p>
+  <div class="meta-row"><span>5 тем · 20 вопросов</span><span>2 команды</span><span>≈ 20 минут</span></div>
+
+  <div class="board" role="navigation" aria-label="Разделы занятия в виде табло вылетов">
+    <div class="board-top"><span>ВЫЛЕТ · DEPARTURES</span><span class="clock" id="clock">--:--</span></div>
+    <div class="row head" aria-hidden="true"><span>ВРЕМЯ</span><span>РЕЙС</span><span>НАПРАВЛЕНИЕ</span><span>ВЫХОД</span><span>СТАТУС</span></div>
+    <div id="rows"></div>
+    <p class="board-note">Нажмите на строку табло, чтобы перейти к разделу</p>
+  </div>
+</header>
+
+<section id="plan">
+  <div class="sec-head">
+    <span class="flightno">ПЛАН ПОЛЁТА</span>
+    <h2>Как провести занятие</h2>
+    <p class="lead">Занятие построено по циклу, по которому работают экипажи: сначала брифинг, потом выполнение, в конце разбор.</p>
+  </div>
+  <div class="plan">
+    <div class="phase"><div class="phase-top"><h3>1. Брифинг</h3><span class="mins">5 МИН</span></div><p>Пройдите пять карточек тем. Сначала задайте группе вопрос с лицевой стороны, потом переверните карточку и сверьте ответы.</p></div>
+    <div class="phase"><div class="phase-top"><h3>2. Игра экипажей</h3><span class="mins">12 МИН</span></div><p>Разделите группу на два экипажа. Команды отвечают по очереди, верный ответ даёт очко. Отвечать можно мышью или клавишами 1–4.</p></div>
+    <div class="phase"><div class="phase-top"><h3>3. Дебрифинг</h3><span class="mins">3 МИН</span></div><p>Запустите таймер. Каждый студент отвечает на один из четырёх вопросов разбора: так материал закрепляется лучше всего.</p></div>
+  </div>
+</section>
+
+<section id="brifing">
+  <div class="sec-head">
+    <span class="flightno">ЭТАП 1 · БРИФИНГ</span>
+    <h2>Пять тем курса</h2>
+    <p class="lead">Нажмите на карточку, чтобы перевернуть её: на обороте главное, что нужно запомнить по теме.</p>
+  </div>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section id="igra">
+  <div class="sec-head">
+    <span class="flightno">ЭТАП 2 · ВЫПОЛНЕНИЕ</span>
+    <h2>Игра экипажей</h2>
+    <p class="lead">20 вопросов по пяти темам: от методологии до оформления статьи. Выберите темы, назовите команды и начинайте.</p>
+  </div>
+  <div class="game" id="game"></div>
+</section>
+
+<section id="debrifing">
+  <div class="sec-head">
+    <span class="flightno">ЭТАП 3 · ДЕБРИФИНГ</span>
+    <h2>Разбор полёта</h2>
+    <p class="lead">Три минуты в конце занятия. Каждый студент отвечает вслух на один из вопросов.</p>
+  </div>
+  <div class="debrief">
+    <div class="dq">
+      <p>Что я сегодня вспомнил или понял по-новому об исследовании?</p>
+      <p>Какая тема оказалась самой сложной и почему?</p>
+      <p>Где мне это пригодится: в статье, курсовой или дипломе?</p>
+      <p>Какой вопрос я хочу задать преподавателю?</p>
+    </div>
+    <div class="timer">
+      <span class="eyebrow">Таймер разбора</span>
+      <div class="time" id="time" role="timer" aria-live="off">3:00</div>
+      <div class="tbtns"><button class="btn primary" id="tStart">Старт</button><button class="btn" id="tReset">Сбросить</button></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <h3>Материалы</h3>
+  <ol>
+    <li>Требования к оформлению статей журнала «Вестник КАИ им. И. Абдраимова „Авиатор“».</li>
+    <li>ГОСТ Р 7.0.100–2018. Библиографическая запись. Библиографическое описание. Общие требования и правила составления.</li>
+  </ol>
+  <p>Примеры тем исследований в вопросах учебные.</p>
+</footer>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- Табло ---------- */
+  const ROWS = [
+    ['08:00','НИ 101','ПЛАН ЗАНЯТИЯ','A1','ПОСАДКА','st-board','plan'],
+    ['08:05','НИ 102','БРИФИНГ · 5 ТЕМ','A2','ПО РАСПИСАНИЮ','st-ok','brifing'],
+    ['08:10','НИ 103','ИГРА ЭКИПАЖЕЙ','B1','ИДЁТ ПОСАДКА','st-board','igra'],
+    ['08:22','НИ 104','ДЕБРИФИНГ','B2','ПО РАСПИСАНИЮ','st-ok','debrifing'],
+    ['08:25','НИ 105','МАТЕРИАЛЫ','C1','ИНФОРМАЦИЯ','st-info','mat']
+  ];
+  const flaps = t => '<span class="flaps">' + [...t].map(c => `<span class="flap">${c === ' ' ? '&nbsp;' : c}</span>`).join('') + '</span>';
+  $('#rows').innerHTML = ROWS.map(r => `<button class="row" data-go="${r[6]}" aria-label="Перейти: ${r[2]}">${flaps(r[0])}${flaps(r[1])}${flaps(r[2])}${flaps(r[3])}<span class="status ${r[5]}">${r[4]}</span></button>`).join('');
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
+    const el = b.dataset.go === 'mat' ? document.querySelector('footer') : document.getElementById(b.dataset.go);
+    el.scrollIntoView({behavior: reduce ? 'auto' : 'smooth'});
+  }));
+  if (!reduce) document.querySelectorAll('#rows .flap').forEach((f, i) => { f.style.animationDelay = (i % 40) * 18 + Math.floor(i / 40) * 40 + 'ms'; f.classList.add('go'); });
+  const clock = () => { $('#clock').textContent = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bishkek'}) + ' BISHKEK'; };
+  clock(); setInterval(clock, 20000);
+
+  /* ---------- Карточки тем ---------- */
+  const TOPICS = [
+    {n:'01', t:'Наука и этапы научного исследования',
+     q:'С чего начинается любое исследование и чем оно заканчивается?',
+     pts:['Наука — деятельность, направленная на получение и систематизацию новых знаний','Фундаментальные исследования раскрывают закономерности, прикладные решают конкретные практические задачи','Этапы: выбор темы → изучение литературы → цель и задачи → методы → сбор данных → анализ → выводы → публикация'],
+     hook:'Исследование заканчивается не выводами, а публикацией и защитой'},
+    {n:'02', t:'Методологический аппарат исследования',
+     q:'Чем объект исследования отличается от предмета?',
+     extra:'<div class="triad" style="grid-template-columns:1fr 1fr"><span><b>Объект</b>процесс или явление</span><span><b>Предмет</b>его сторона, которую изучаем</span></div>',
+     pts:['Актуальность и проблема: почему тему важно изучать именно сейчас','Цель — главный ожидаемый результат; задачи — шаги к нему','Гипотеза — научное предположение, которое нужно проверить','Научная новизна — то, что автор получил или предложил впервые'],
+     hook:'Объект — где ищем, предмет — что именно ищем'},
+    {n:'03', t:'Методы научного исследования',
+     q:'Опрос студентов о практике — это эмпирический или теоретический метод?',
+     extra:'<div class="triad" style="grid-template-columns:1fr 1fr"><span><b>Эмпирические</b>наблюдение, эксперимент, измерение, опрос</span><span><b>Теоретические</b>анализ, синтез, сравнение, аналогия, моделирование</span></div>',
+     pts:['Эксперимент отличается от наблюдения тем, что исследователь сам меняет условия','Индукция — от частных фактов к общему выводу, дедукция — от общего к частному','Аналогия — перенос решения из одной области в другую, например из лётной практики в учебный процесс'],
+     hook:'Эмпирика — смотрю и измеряю, теория — думаю и обобщаю'},
+    {n:'04', t:'Научная информация, источники и ссылки',
+     q:'Почему пост в соцсети нельзя ставить в список литературы научной статьи?',
+     pts:['Надёжные источники: официальные сайты и документы, нормативные акты, стандарты, рецензируемые журналы, монографии','Первичный источник — оригинал (закон, стандарт, исследование), вторичный — его пересказ','Ссылка в тексте: [1, с. 25] — источник № 1 из списка, страница 25','Источники нумеруют в порядке упоминания в тексте, оформляют по ГОСТ Р 7.0.100–2018'],
+     hook:'Нет ссылки — нет факта'},
+    {n:'05', t:'Научная статья и её защита',
+     q:'Назовите по порядку основные части научной статьи.',
+     pts:['УДК, название, сведения об авторах, аннотация и 5–10 ключевых слов','Актуальность → анализ исследований → материалы и методы → результаты и предложения → выводы → список литературы','Плагиат — чужой текст или идея без ссылки. Чужую мысль пересказывают своими словами или цитируют в кавычках и указывают источник','Защита: доклад по презентации и ответы на вопросы комиссии'],
+     hook:'УДК → аннотация → ключевые слова → текст → литература'}
+  ];
+  $('#cards').innerHTML = TOPICS.map((t, i) => `
+    <button class="card" data-c="${i}" aria-pressed="false" aria-label="Тема ${i + 1}: ${esc(t.t)}. Нажмите, чтобы перевернуть">
+      <div class="card-inner">
+        <div class="face front"><span class="num">${t.n}</span><h3>${esc(t.t)}</h3><p class="warm"><b>Вопрос группе:</b> ${esc(t.q)}</p><span class="hint">НАЖМИТЕ — ОТВЕТ НА ОБОРОТЕ ↻</span></div>
+        <div class="face back"><span class="eyebrow">Тема ${t.n} · запомнить</span>
+          ${t.extra || ''}
+          <ul>${t.pts.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+          <div class="hook"><small>ЗАПОМНИТЬ</small>${esc(t.hook)}</div></div>
+      </div></button>`).join('');
+  document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => {
+    const on = !c.classList.contains('flipped'); c.classList.toggle('flipped', on); c.setAttribute('aria-pressed', on);
+  }));
+
+  /* ---------- Вопросы ---------- */
+  const Q = [
+    {t:1, q:'Наука — это…', o:['Набор готовых ответов на все вопросы','Деятельность, направленная на получение и систематизацию новых знаний','Любое мнение, опубликованное в интернете','Только работа в лаборатории'], a:1, e:'Главное в науке — новое, проверяемое и систематизированное знание.'},
+    {t:1, q:'Чем прикладное исследование отличается от фундаментального?', o:['Прикладное решает конкретную практическую задачу','Прикладное всегда дороже','Фундаментальное не требует методов','Разницы нет'], a:0, e:'Фундаментальные исследования раскрывают закономерности, прикладные используют знания для решения практических задач.'},
+    {t:1, q:'Какой этап обычно идёт сразу после выбора темы?', o:['Публикация статьи','Защита перед комиссией','Изучение литературы по теме','Формулировка выводов'], a:2, e:'Сначала нужно узнать, что уже известно по теме, иначе легко «изобрести велосипед».'},
+    {t:2, q:'Что шире: объект или предмет исследования?', o:['Предмет','Объект','Они всегда совпадают','Зависит от объёма статьи'], a:1, e:'Объект — процесс или явление целиком, предмет — та его сторона, которую изучает автор.'},
+    {t:2, q:'Гипотеза — это…', o:['Доказанный факт','Научное предположение, которое нужно проверить','Список литературы','Вывод в конце статьи'], a:1, e:'Гипотеза выдвигается в начале работы и подтверждается или опровергается в ходе исследования.'},
+    {t:2, q:'Как связаны цель и задачи исследования?', o:['Задачи — шаги, которые ведут к цели','Цель — одна из задач','Задач не бывает больше одной','Это одно и то же'], a:0, e:'Цель — главный результат, задачи — конкретные шаги для его достижения.'},
+    {t:2, q:'Научная новизна — это…', o:['Новый шрифт в статье','То, что автор получил или предложил впервые','Свежая дата публикации','Количество источников'], a:1, e:'Новизна отвечает на вопрос: что нового внёс именно этот автор.'},
+    {t:3, q:'Анкетирование студентов о практике — какой это метод?', o:['Теоретический','Эмпирический'], a:1, e:'Эмпирические методы получают данные из опыта: наблюдение, измерение, опрос, эксперимент.'},
+    {t:3, q:'Модель брифинга перенесли из лётной практики в организацию практики студентов. Какой метод использован?', o:['Эксперимент','Аналогия','Измерение','Анкетирование'], a:1, e:'Аналогия — перенос решения из одной области в другую.'},
+    {t:3, q:'Индукция — это движение мысли…', o:['От общего к частному','От частных фактов к общему выводу','По кругу','Без логики'], a:1, e:'Индукция: от частного к общему. Дедукция — наоборот, от общего к частному.'},
+    {t:3, q:'Чем эксперимент отличается от наблюдения?', o:['Исследователь сам создаёт и меняет условия','В эксперименте не нужны данные','Наблюдение всегда точнее','Ничем'], a:0, e:'При наблюдении условия не меняют, в эксперименте ими управляют.'},
+    {t:4, q:'Какой источник надёжнее для научной статьи?', o:['Пост в соцсети','Форум любителей авиации','Официальный документ ИКАО','Анонимный блог'], a:2, e:'Официальные документы, нормативные акты и рецензируемые журналы — надёжная основа для фактов.'},
+    {t:4, q:'Что означает ссылка [1, с. 25]?', o:['Первая страница, 25-й источник','Источник № 1 из списка литературы, страница 25','Глава 1, абзац 25','25 источников на странице 1'], a:1, e:'Номер — позиция в списке литературы, после него — страница, откуда взята мысль.'},
+    {t:4, q:'В каком порядке нумеруют источники в списке литературы статьи для «Авиатора»?', o:['По алфавиту','По году издания','В порядке упоминания в тексте','Как угодно'], a:2, e:'Первый упомянутый в тексте источник получает № 1, следующий новый — № 2 и так далее.'},
+    {t:4, q:'Первичный источник — это…', o:['Оригинальный документ или исследование','Пересказ статьи в новостях','Конспект однокурсника','Любой сайт'], a:0, e:'Первичный — закон, стандарт, исследование с данными. Вторичный — его пересказ или обзор.'},
+    {t:5, q:'Что по требованиям «Авиатора» ставится в верхнем левом углу статьи?', o:['Фото автора','УДК','Список литературы','Ключевые слова'], a:1, e:'УДК — индекс универсальной десятичной классификации, с него начинается статья.'},
+    {t:5, q:'Аннотация — это…', o:['Краткое содержание статьи: проблема, цель, результаты','Список литературы','Благодарности','Последний абзац выводов'], a:0, e:'По аннотации читатель решает, читать ли статью целиком.'},
+    {t:5, q:'Сколько ключевых слов обычно требуется к статье?', o:['1–2','5–10','20–30','Сколько угодно'], a:1, e:'5–10 ключевых слов на языке статьи и на английском.'},
+    {t:5, q:'Плагиат — это…', o:['Цитата в кавычках со ссылкой','Использование чужого текста или идей без ссылки на источник','Пересказ своими словами со ссылкой','Список литературы'], a:1, e:'Чужую мысль можно использовать, но только с указанием источника.'},
+    {t:5, q:'Как правильно использовать мысль другого автора?', o:['Скопировать без кавычек','Пересказать своими словами или процитировать и указать источник','Изменить пару слов и не ссылаться','Перевести с английского и выдать за свою'], a:1, e:'Пересказ или цитата плюс ссылка в квадратных скобках — так требует научная этика.'}
+  ];
+  const TNAME = ['Наука и этапы','Методология','Методы','Источники и ссылки','Статья и защита'];
+
+  /* ---------- Игра ---------- */
+  const S = store.get('ni101-setup', {mode:'teams', a:'Экипаж А', b:'Экипаж Б', topics:[1,2,3,4,5], shuffle:true});
+  let G = null;
+  function shuffle(arr){ const a = arr.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  function renderSetup(){
+    const g = $('#game');
+    g.innerHTML = `<div class="setup">
+      <div class="fieldset"><label>РЕЖИМ</label><div class="modes"><button class="mode ${S.mode === 'teams' ? 'on' : ''}" data-m="teams">Две команды</button><button class="mode ${S.mode === 'solo' ? 'on' : ''}" data-m="solo">Вся группа вместе</button></div></div>
+      <div class="setup-grid" id="teamNames" ${S.mode === 'solo' ? 'hidden' : ''}>
+        <div class="fieldset"><label for="ta">ПЕРВАЯ КОМАНДА</label><input type="text" id="ta" maxlength="24" value="${esc(S.a)}"></div>
+        <div class="fieldset"><label for="tb">ВТОРАЯ КОМАНДА</label><input type="text" id="tb" maxlength="24" value="${esc(S.b)}"></div>
+      </div>
+      <div class="fieldset"><label>ТЕМЫ</label><div class="topics">${TNAME.map((n, i) => `<label class="chip"><input type="checkbox" id="tp${i + 1}" ${S.topics.includes(i + 1) ? 'checked' : ''}>${i + 1}. ${n}</label>`).join('')}</div></div>
+      <label class="chip" style="justify-self:start"><input type="checkbox" id="shuf" ${S.shuffle ? 'checked' : ''}>Перемешать вопросы</label>
+      <div class="actions"><span class="keys" id="qn"></span><button class="btn primary" id="start">Начать игру →</button></div>
+    </div>`;
+    const count = () => { const tp = TNAME.map((_, i) => $('#tp' + (i + 1)).checked ? i + 1 : 0).filter(Boolean); $('#qn').textContent = 'ВОПРОСОВ: ' + Q.filter(q => tp.includes(q.t)).length; return tp; };
+    count();
+    g.querySelectorAll('.topics input').forEach(x => x.addEventListener('change', count));
+    g.querySelectorAll('.mode').forEach(m => m.addEventListener('click', () => { S.mode = m.dataset.m; g.querySelectorAll('.mode').forEach(x => x.classList.toggle('on', x === m)); $('#teamNames').hidden = S.mode === 'solo'; }));
+    $('#start').onclick = () => {
+      const tp = count(); if (!tp.length){ $('#qn').textContent = 'ВЫБЕРИТЕ ХОТЯ БЫ ОДНУ ТЕМУ'; return; }
+      S.a = ($('#ta').value || 'Экипаж А').trim(); S.b = ($('#tb').value || 'Экипаж Б').trim(); S.topics = tp; S.shuffle = $('#shuf').checked;
+      store.set('ni101-setup', S);
+      let qs = Q.filter(q => tp.includes(q.t)); if (S.shuffle) qs = shuffle(qs);
+      G = {qs, i:0, turn:0, sc:[0, 0], solo:0, answered:false};
+      renderQ();
+    };
+  }
+
+  function scoreboard(){
+    if (S.mode === 'solo') return `<div class="scoreboard" style="grid-template-columns:1fr auto"><div class="team turn"><span class="tname">Вся группа</span><span class="tscore">${G.solo}</span></div><div class="qcount">ВОПРОС<br>${Math.min(G.i + 1, G.qs.length)} / ${G.qs.length}</div></div>`;
+    return `<div class="scoreboard"><div class="team ${G.turn === 0 ? 'turn' : ''}"><span class="tname">${esc(S.a)}</span><span class="tscore">${G.sc[0]}</span></div>
+      <div class="qcount">ВОПРОС<br>${Math.min(G.i + 1, G.qs.length)} / ${G.qs.length}</div>
+      <div class="team ${G.turn === 1 ? 'turn' : ''}"><span class="tname">${esc(S.b)}</span><span class="tscore">${G.sc[1]}</span></div></div>`;
+  }
+
+  function renderQ(){
+    const g = $('#game');
+    if (G.i >= G.qs.length) return renderEnd();
+    const q = G.qs[G.i]; G.answered = false;
+    const who = S.mode === 'solo' ? 'ОТВЕЧАЕТ ВСЯ ГРУППА' : 'ОТВЕЧАЕТ: ' + (G.turn === 0 ? S.a : S.b).toUpperCase();
+    g.innerHTML = `${scoreboard()}
+      <div class="progress"><span style="width:${G.i / G.qs.length * 100}%"></span></div>
+      <div class="qmeta"><span class="topic">ТЕМА ${q.t} · ${TNAME[q.t - 1].toUpperCase()}</span><span class="who">${esc(who)}</span></div>
+      <p class="question">${esc(q.q)}</p>
+      <div class="options">${q.o.map((o, k) => `<button class="opt" data-k="${k}"><span class="k">${k + 1}</span><span>${esc(o)}</span></button>`).join('')}</div>
+      <div id="ex"></div>
+      <div class="actions"><span class="keys">Клавиши 1–${q.o.length} — ответ · Enter — дальше</span><button class="btn" id="quit">Завершить игру</button></div>`;
+    g.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => answer(+b.dataset.k)));
+    $('#quit').onclick = renderEnd;
+  }
+
+  function answer(k){
+    if (!G || G.answered || G.i >= G.qs.length) return;
+    const q = G.qs[G.i]; if (k >= q.o.length) return;
+    G.answered = true;
+    const ok = k === q.a;
+    if (ok){ if (S.mode === 'solo') G.solo++; else G.sc[G.turn]++; }
+    document.querySelectorAll('.opt').forEach((b, j) => { b.disabled = true; if (j === q.a) b.classList.add('right'); else if (j === k) b.classList.add('wrong'); });
+    const team = G.turn === 0 ? S.a : S.b;
+    const head = ok ? (S.mode === 'solo' ? 'Верно!' : `Верно! +1 очко: ${team}`) : `Неверно. Правильный ответ: ${q.o[q.a]}`;
+    $('#ex').innerHTML = `<div class="explain ${ok ? 'good' : 'badv'}"><strong>${esc(head)}</strong><p>${esc(q.e)}</p>
+      <div class="actions"><span class="keys">${S.mode === 'teams' && G.i < G.qs.length - 1 ? 'Следующий ход: ' + esc(G.turn === 0 ? S.b : S.a) : ''}</span><button class="btn primary" id="nextQ">${G.i === G.qs.length - 1 ? 'Итоги игры' : 'Следующий вопрос →'}</button></div></div>`;
+    // обновить табло счёта без перерисовки вопроса
+    const sb = document.querySelector('.scoreboard'); sb.outerHTML = scoreboard();
+    $('#nextQ').onclick = next; $('#nextQ').focus({preventScroll:true});
+  }
+  function next(){ if (!G || !G.answered) return; G.i++; if (S.mode === 'teams') G.turn = 1 - G.turn; renderQ(); }
+
+  function renderEnd(){
+    const g = $('#game'); const total = G.qs.length;
+    let big, sub;
+    if (S.mode === 'solo'){ big = `<span>${G.solo}</span> из ${total}`; sub = G.solo >= total * .8 ? 'Отличный полёт! Группа готова писать статьи.' : G.solo >= total * .5 ? 'Хороший результат. Вернитесь к карточкам тем, где были ошибки.' : 'Стоит повторить карточки тем и сыграть ещё раз.'; }
+    else if (G.sc[0] === G.sc[1]){ big = `Ничья <span>${G.sc[0]} : ${G.sc[1]}</span>`; sub = 'Оба экипажа допущены к полёту!'; }
+    else { const w = G.sc[0] > G.sc[1] ? S.a : S.b; big = `<span>${esc(w)}</span>`; sub = `Победа со счётом ${Math.max(...G.sc)} : ${Math.min(...G.sc)}`; }
+    g.innerHTML = `<div class="final"><span class="eyebrow">Итоги рейса</span><div class="big">${big}</div><span class="clear">ВЗЛЁТ РАЗРЕШЁН</span><p class="lead" style="text-align:center">${esc(sub)}</p>
+      <div class="tbtns"><button class="btn primary" id="again">Сыграть ещё раз</button><button class="btn" id="toDeb">К дебрифингу ↓</button></div></div>`;
+    $('#again').onclick = renderSetup;
+    $('#toDeb').onclick = () => document.getElementById('debrifing').scrollIntoView({behavior: reduce ? 'auto' : 'smooth'});
+    G = null;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!G || e.target.matches('input, textarea')) return;
+    const r = $('#game').getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    if (/^[1-4]$/.test(e.key) && !G.answered){ e.preventDefault(); answer(+e.key - 1); }
+    else if (e.key === 'Enter' && G.answered){ e.preventDefault(); next(); }
+  });
+  renderSetup();
+
+  /* ---------- Таймер дебрифинга ---------- */
+  let left = 180, timer = null;
+  const fmt = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  const tEl = $('#time'), startB = $('#tStart');
+  function tick(){ left--; tEl.textContent = fmt(left); if (left <= 0){ clearInterval(timer); timer = null; tEl.textContent = 'Посадка!'; tEl.classList.add('done'); startB.textContent = 'Старт'; } }
+  startB.onclick = () => {
+    if (timer){ clearInterval(timer); timer = null; startB.textContent = 'Продолжить'; return; }
+    if (left <= 0){ left = 180; tEl.classList.remove('done'); tEl.textContent = fmt(left); }
+    timer = setInterval(tick, 1000); startB.textContent = 'Пауза';
+  };
+  $('#tReset').onclick = () => { clearInterval(timer); timer = null; left = 180; tEl.textContent = fmt(left); tEl.classList.remove('done'); startB.textContent = 'Старт'; };
+})();
+</script>
+
+</body></html>
